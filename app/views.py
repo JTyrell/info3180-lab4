@@ -5,9 +5,13 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 import os
-from app import app
+from app import app, forms
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import CombinedMultiDict
+from .forms import  UploadForm
+
+
 
 
 ###
@@ -23,24 +27,45 @@ def home():
 @app.route('/about/')
 def about():
     """Render the website's about page."""
-    return render_template('about.html', name="Mary Jane")
+    return render_template('about.html', name="Jevoun Tyrell")
+
+def get_uploaded_images():
+    rootdir = os.getcwd()
+    f = []
+    for subdir, dirs, files in os.walk(rootdir + './app/static/uploads'):
+        for file in files:
+            f.append(file)
+    return f
+
+
+@app.route('/files')
+def files():
+    lst = []
+    if not session.get('logged_in'):
+        abort(401)
+    lst=get_uploaded_images()
+    return render_template('files.html',lst=lst)
 
 
 @app.route('/upload', methods=['POST', 'GET'])
 def upload():
+    imgfile = UploadForm()
     if not session.get('logged_in'):
         abort(401)
-
-    # Instantiate your form class
-
-    # Validate file upload on submit
+        # Instantiate your form class
+        
+        # Validate file upload on submit
+        # Validate file upload on submit
     if request.method == 'POST':
         # Get file data and save to your uploads folder
-
-        flash('File Saved', 'success')
-        return redirect(url_for('home'))
-
-    return render_template('upload.html')
+        if imgfile.validate_on_submit():
+            pitcha = imgfile.pitcha.data
+            filename = secure_filename(pitcha.filename)
+            pitcha.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('File Saved', 'success')
+            return redirect(url_for('home'))
+    else:
+         return render_template('upload.html',form = imgfile)
 
 
 @app.route('/login', methods=['POST', 'GET'])

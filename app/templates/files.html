@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class = "g_blocks">
+	{% for f in lst %}
+      <img src="{{url_for('static', filename ='uploads/'+ f ) }}"></img>
+	{% endfor %}
+</div> 
+
+{% endblock %}
